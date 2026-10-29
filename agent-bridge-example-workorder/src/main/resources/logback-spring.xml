@@ -16,5 +16,5 @@
         <appender-ref ref="STDERR"/>
     </root>
 
-    <logger name="io.github.agentbridge" level="INFO"/>
+    <logger name="io.github.tujincode.agentbridge" level="INFO"/>
 </configuration>

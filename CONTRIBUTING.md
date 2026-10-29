@@ -22,7 +22,7 @@ badly scoped PR costs more than it saves, so there is exactly **one hard rule**:
 Requirements: JDK 17+ (21 recommended), Maven 3.6+.
 
 ```bash
-git clone https://github.com/agentbridge/agent-bridge.git
+git clone https://github.com/tujinCode/agent-bridge.git
 cd agent-bridge
 mvn verify          # build + unit tests
 ./scripts/smoke.sh  # end-to-end protocol check against the example app

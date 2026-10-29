@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         This project only schedules work that maps to a requirement id in
-        [docs/02-需求清单.md](https://github.com/agentbridge/agent-bridge/blob/main/docs/02-%E9%9C%80%E6%B1%82%E6%B8%85%E5%8D%95.md).
+        [docs/02-需求清单.md](https://github.com/tujinCode/agent-bridge/blob/main/docs/02-%E9%9C%80%E6%B1%82%E6%B8%85%E5%8D%95.md).
         If your idea is not covered there, that is fine — this issue is how it gets an id.
 
   - type: textarea

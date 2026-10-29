@@ -14,9 +14,9 @@ agent-bridge:
   # Try changing this to DESTRUCTIVE and watch workorder.purge start working.
   max-auto-risk: WRITE
   include-packages:
-    - io.github.agentbridge.example
+    - io.github.tujincode.agentbridge.example
 
 logging:
   level:
     root: warn
-    io.github.agentbridge: info
+    io.github.tujincode.agentbridge: info

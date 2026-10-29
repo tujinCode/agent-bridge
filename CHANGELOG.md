@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Relicensed from MIT to Apache-2.0.** Apache-2.0 adds an explicit patent
+  grant and a trademark clause, which is what enterprise legal review expects
+  from a library that sits next to their authorization code. Source files now
+  carry the Apache header; see `NOTICE`.
+- Maven coordinates moved to `io.github.tujincode`, packages to
+  `io.github.tujincode.agentbridge.*`. Nothing was published under the old
+  coordinates, so this is not a breaking change for anyone.
+
 ### Planned for v0.5.0 (V1)
 
 - Identity pass-through: on-behalf-of delegation built on Spring Security, so
@@ -44,5 +54,5 @@ First cut: the vertical slice that proves "annotation is the contract".
 - JSON Schema composition (`oneOf` / `anyOf`) is not expressible from a method
   signature.
 
-[Unreleased]: https://github.com/agentbridge/agent-bridge/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/agentbridge/agent-bridge/releases/tag/v0.1.0
+[Unreleased]: https://github.com/tujinCode/agent-bridge/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/tujinCode/agent-bridge/releases/tag/v0.1.0

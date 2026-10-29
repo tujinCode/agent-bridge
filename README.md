@@ -4,8 +4,8 @@
 
 **Turn existing Spring Boot services into governed AI-agent tools — one annotation, no rewrite.**
 
-[![CI](https://github.com/agentbridge/agent-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/agentbridge/agent-bridge/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/tujinCode/agent-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/tujinCode/agent-bridge/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/java-17%2B-blue.svg)](https://adoptium.net)
 [![Spring Boot](https://img.shields.io/badge/spring--boot-3.x-6DB33F.svg)](https://spring.io/projects/spring-boot)
 [![Status](https://img.shields.io/badge/status-MVP-orange.svg)](docs/03-阶段路线图.md)
@@ -102,7 +102,7 @@ The core deliberately has **zero Spring dependencies**. The starter is one adapt
 **1. Build it locally** (not on Maven Central yet):
 
 ```bash
-git clone https://github.com/agentbridge/agent-bridge.git
+git clone https://github.com/tujinCode/agent-bridge.git
 cd agent-bridge
 mvn install
 ```
@@ -204,4 +204,4 @@ Issues and PRs are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first
 
 ## License
 
-[MIT](LICENSE).
+[Apache License 2.0](LICENSE). Copyright 2026 Zhang Cong — see [NOTICE](NOTICE).

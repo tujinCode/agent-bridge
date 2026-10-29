@@ -4,8 +4,8 @@
 
 **给已有的 Spring Boot 服务加一个注解，让它成为受治理的 AI Agent 工具——不重写、不换权限体系。**
 
-[![CI](https://github.com/agentbridge/agent-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/agentbridge/agent-bridge/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/tujinCode/agent-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/tujinCode/agent-bridge/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/java-17%2B-blue.svg)](https://adoptium.net)
 
 [English](README.md) · [阶段路线图](docs/03-阶段路线图.md) · [架构设计](docs/04-架构设计.md) · [贡献指南](CONTRIBUTING.md)
@@ -68,7 +68,7 @@ ToolScanner + JsonSchemaBuilder   注解 → 契约
 ## 快速开始
 
 ```bash
-git clone https://github.com/agentbridge/agent-bridge.git
+git clone https://github.com/tujinCode/agent-bridge.git
 cd agent-bridge && mvn install
 java -jar agent-bridge-example-workorder/target/agent-bridge-example-workorder-0.1.0-SNAPSHOT.jar
 ```
@@ -134,4 +134,4 @@ agent-bridge:
 
 请先读 [CONTRIBUTING.md](CONTRIBUTING.md)，只有一条硬规则：*每个功能必须对应 [需求清单](docs/02-需求清单.md) 里的编号*。
 
-[MIT](LICENSE)。
+**许可**：[Apache License 2.0](LICENSE)，版权归 Zhang Cong（2026），详见 [NOTICE](NOTICE)。
