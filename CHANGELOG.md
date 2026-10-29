@@ -16,14 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `io.github.tujincode.agentbridge.*`. Nothing was published under the old
   coordinates, so this is not a breaking change for anyone.
 
-### Planned for v0.5.0 (V1)
+### Planned for v0.5.0
 
 - Identity pass-through: on-behalf-of delegation built on Spring Security, so
-  existing `@PreAuthorize` rules apply to agent calls (FR-18, FR-19).
-- Idempotency: `requestId` deduplication window backed by Redis (FR-14).
-- Audit persistence and query by request id / caller / tool (FR-13).
-- Streamable HTTP transport sharing the same registry (FR-24).
-- Timeouts and three-level rate limiting (FR-15, FR-16).
+  existing `@PreAuthorize` rules apply to agent calls.
+- Idempotency: `requestId` deduplication window backed by Redis.
+- Audit persistence and query by request id / caller / tool.
+- Streamable HTTP transport sharing the same registry.
+- Timeouts and three-level rate limiting.
 
 ## [0.1.0] - 2026-10-29
 

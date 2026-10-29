@@ -1,6 +1,6 @@
 ## What this changes
 
-<!-- One or two sentences. Link the requirement id if there is one. -->
+<!-- One or two sentences. Link the issue this resolves, if there is one. -->
 
 Requirement: FR-
 

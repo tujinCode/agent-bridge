@@ -8,9 +8,9 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/java-17%2B-blue.svg)](https://adoptium.net)
 [![Spring Boot](https://img.shields.io/badge/spring--boot-3.x-6DB33F.svg)](https://spring.io/projects/spring-boot)
-[![Status](https://img.shields.io/badge/status-MVP-orange.svg)](docs/03-阶段路线图.md)
+[![Status](https://img.shields.io/badge/status-MVP-orange.svg)](#status)
 
-[中文文档](README.zh-CN.md) · [Roadmap](docs/03-阶段路线图.md) · [Architecture](docs/04-架构设计.md) · [Contributing](CONTRIBUTING.md)
+[中文文档](README.zh-CN.md) · [What works](#status) · [Roadmap](#roadmap) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -196,11 +196,28 @@ agent-bridge:
 
 MVP. What works today: annotation-driven tools, schema derivation, risk gate, audit listener, stdio transport, MCP tool annotations.
 
-What does **not** work yet, and we will not pretend otherwise: no real identity delegation, no idempotency, no audit persistence, no HTTP transport. See [docs/04-架构设计.md § Known limitations](docs/04-架构设计.md#6-已知限制v010) and the [roadmap](docs/03-阶段路线图.md).
+What does **not** work yet, and we will not pretend otherwise:
+
+- **No identity delegation.** `ToolInvocationContext` carries a caller id, but it is not yet derived from a token exchange. Until it is, treat the caller id as *asserted*, not *verified*.
+- **No idempotency.** A retried `tools/call` runs twice. Do not point this at a tool that charges money or creates records.
+- **No audit persistence.** You get one `ToolCallListener` callback per call; where it is written is your decision, not the library's.
+- **No HTTP transport.** stdio only, which means one process per client.
+- **The scan touches every bean at startup.** Use `include-packages` on a large application.
+- **No `oneOf` / `anyOf`.** Schema composition is not expressible from a method signature.
+
+## Roadmap
+
+Ordered by what blocks production adoption, not by what is interesting to build.
+
+- **v0.5.0** — on-behalf-of identity through Spring Security, so existing `@PreAuthorize` rules apply to agent calls; `requestId` deduplication; audit persistence and query; streamable HTTP.
+- **v0.9.0** — multi-tenancy, tool versioning and deprecation, per-tool rate limits, response redaction, OpenTelemetry metrics.
+- **v1.0.0** — API freeze, adapters for non-Spring stacks, a documentation site.
+
+Nothing here has a date attached. A feature lands when its tests are green, and the version number moves when the previous sentence is true.
 
 ## Contributing
 
-Issues and PRs are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first — it explains the one rule that matters: *every feature needs a requirement id in [docs/02-需求清单.md](docs/02-需求清单.md)*.
+Issues and PRs are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first — it explains the one rule that matters: *a feature without a stated problem is a feature nobody asked for*.
 
 ## License
 

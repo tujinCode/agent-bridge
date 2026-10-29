@@ -1,13 +1,13 @@
 name: Feature request
-description: Propose a capability, ideally tied to a requirement id in the roadmap
+description: Propose a capability, starting from the problem it solves
 labels: [ "enhancement", "needs-triage" ]
 body:
   - type: markdown
     attributes:
       value: |
-        This project only schedules work that maps to a requirement id in
-        [docs/02-需求清单.md](https://github.com/tujinCode/agent-bridge/blob/main/docs/02-%E9%9C%80%E6%B1%82%E6%B8%85%E5%8D%95.md).
-        If your idea is not covered there, that is fine — this issue is how it gets an id.
+        Check the [roadmap](https://github.com/tujinCode/agent-bridge#roadmap) first — if the
+        capability is already planned, say which item it belongs to. If it is not planned,
+        that is fine: this issue is where it gets discussed and decided.
 
   - type: textarea
     id: problem

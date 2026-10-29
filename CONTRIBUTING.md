@@ -3,9 +3,10 @@
 Thanks for taking the time to contribute. This project is small enough that a
 badly scoped PR costs more than it saves, so there is exactly **one hard rule**:
 
-> **Every feature must map to a requirement id in [docs/02-需求清单.md](docs/02-需求清单.md).**
-> If the id does not exist, open an issue first. PRs that add features without a
-> requirement id will be converted into issues rather than merged.
+> **Every feature must start as an issue that states the problem it solves.**
+> Not the solution — the problem, in one paragraph, with the failure it causes
+> today. PRs that add behaviour nobody asked for will be converted into issues
+> rather than merged.
 
 ## Ways to contribute that are genuinely useful
 

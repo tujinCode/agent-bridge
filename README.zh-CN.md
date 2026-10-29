@@ -8,7 +8,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/java-17%2B-blue.svg)](https://adoptium.net)
 
-[English](README.md) · [阶段路线图](docs/03-阶段路线图.md) · [架构设计](docs/04-架构设计.md) · [贡献指南](CONTRIBUTING.md)
+[English](README.md) · [当前状态](#当前状态不粉饰) · [路线图](#路线图) · [贡献指南](CONTRIBUTING.md)
 
 </div>
 
@@ -128,10 +128,27 @@ agent-bridge:
 
 **能用**：注解声明工具、schema 自动推导、风险闸门、审计事件、stdio 传输、MCP 工具提示。
 
-**还不能用**：真实身份委托、幂等、审计落库、HTTP 传输。见 [已知限制](docs/04-架构设计.md#6-已知限制v010) 与 [路线图](docs/03-阶段路线图.md)。
+**还不能用**：
+
+- **没有身份委托**。`ToolInvocationContext` 里带 callerId，但它不是从 token exchange 推出来的。在做到之前，这个 id 只能算"声称"，不能算"已验证"。
+- **没有幂等**。重试一次 `tools/call`，业务就执行两次。别拿它接扣款或建单类接口。
+- **没有审计落库**。每次调用给你一个 `ToolCallListener` 回调，写到哪是你的选择，不是库的事。
+- **没有 HTTP 传输**。只有 stdio，一个客户端一个进程。
+- **启动时扫描全部 bean**。大应用请用 `include-packages` 收敛范围。
+- **不支持 `oneOf` / `anyOf`**。方法签名表达不了 schema 组合。
+
+## 路线图
+
+按"什么在阻塞生产接入"排序，不按"什么有意思"排序。
+
+- **v0.5.0** —— 通过 Spring Security 做 on-behalf-of 身份委托，让已有的 `@PreAuthorize` 对 Agent 调用生效；`requestId` 去重；审计落库与查询；streamable HTTP。
+- **v0.9.0** —— 多租户、工具版本化与弃用、单工具限流、响应脱敏、OpenTelemetry 指标。
+- **v1.0.0** —— API 冻结、非 Spring 栈适配、文档站。
+
+上面没有一个是带日期的。测试绿了功能才算落地，上一句成立了版本号才往前走。
 
 ## 贡献与许可
 
-请先读 [CONTRIBUTING.md](CONTRIBUTING.md)，只有一条硬规则：*每个功能必须对应 [需求清单](docs/02-需求清单.md) 里的编号*。
+请先读 [CONTRIBUTING.md](CONTRIBUTING.md)，只有一条硬规则：*没有说清问题的功能，就是没人要的功能*。
 
 **许可**：[Apache License 2.0](LICENSE)，版权归 Zhang Cong（2026），详见 [NOTICE](NOTICE)。
