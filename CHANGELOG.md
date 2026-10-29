@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Beans carrying `@PreAuthorize` were silently skipped by the scanner.** Spring hands
+  back the CGLIB subclass, which carries no annotations of its own, so the cheap
+  `hasAgentTool` check found nothing and the catalogue came up empty — no error, no
+  warning, just zero tools. `scan()` already unwrapped proxies; the check did not. Found
+  by the identity tests below, which is what they were written for.
+
+### Added
+
+- Six identity tests answering "does an agent call reach the `@PreAuthorize` rules the
+  application already wrote". Result: it does, provided a caller exists — the scanned
+  bean is the proxy, so method security fires — but nothing yet turns an MCP request
+  into an `Authentication`, and `SecurityContextHolder` does not survive a hand-off to
+  another thread. Both gaps are captured as disabled tests with the reasoning attached.
+
 ### Changed
 
 - **Relicensed from MIT to Apache-2.0.** Apache-2.0 adds an explicit patent

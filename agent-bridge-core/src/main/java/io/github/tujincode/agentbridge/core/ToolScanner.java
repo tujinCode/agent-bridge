@@ -84,12 +84,24 @@ public final class ToolScanner {
         return descriptors;
     }
 
-    /** Cheap check used by the Spring starter to skip beans without annotations. */
+    /**
+     * Cheap check used by the Spring starter to skip beans without annotations.
+     *
+     * <p>Unwraps proxies first, for the same reason {@link #scan(Object)} does: once a
+     * bean carries {@code @PreAuthorize}, the type Spring reports is the CGLIB subclass,
+     * and that subclass carries no annotations of its own. Skipping the unwrap here
+     * makes every secured bean invisible — tools disappear silently, which is the worst
+     * possible failure mode for a library whose only job is to expose them.
+     *
+     * <p>Limitation: a JDK interface-based proxy still reports {@code java.lang.reflect
+     * .Proxy}, which has no annotation to find. Applications that proxy by interface
+     * should be scanned on the target class instead.
+     */
     public static boolean hasAgentTool(Class<?> type) {
         if (type == null) {
             return false;
         }
-        for (Method method : type.getMethods()) {
+        for (Method method : userClass(type).getMethods()) {
             if (method.isAnnotationPresent(AgentTool.class)) {
                 return true;
             }
