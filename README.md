@@ -82,20 +82,73 @@ No YAML. No adapter class. No second contract.
 
 ```
 Agent (Claude Desktop / Cursor / your own)
-   │  MCP over stdio (JSON-RPC 2.0)
+   │  MCP over stdio (JSON-RPC 2.0) — _meta carries a caller id and, optionally, a token
    ▼
-McpServer  ── transport adapter, protocol-agnostic core
+McpServer      transport adapter: describes the request, decides nothing about proof
    ▼
-ToolRegistry ─── risk ceiling ─── audit listener ─── result rendering
+ToolRegistry   risk ceiling → interceptor chain → audit listener → result rendering
+   │                  │
+   │                  └── the starter installs the identity interceptor here
    ▼
-ToolInvoker ─── argument binding ─── identity injection
+ToolInvoker    argument binding; caller identity is injected, never part of the schema
    ▼
-ToolScanner + JsonSchemaBuilder   (annotation → contract)
-   ▼
-Your existing Spring Boot service — unchanged
+Your existing Spring Boot service — @PreAuthorize unchanged
 ```
 
-The core deliberately has **zero Spring dependencies**. The starter is one adapter among possible others.
+The core deliberately has **zero Spring dependencies**. The starter is one adapter among possible others: it plugs into the interceptor chain instead of being baked into the registry.
+
+## Identity: who is calling
+
+Two credentials exist in a tool call, and only one of them is a credential.
+
+| Source | What it is | Who can forge it |
+|---|---|---|
+| `_meta.callerId` | a claim the client types | anyone with a socket |
+| `_meta.authorization` / `agent-bridge.security.static-token` | a signed token | nobody without the secret |
+
+So the gateway has three modes, and the default is the one that changes nothing:
+
+| Mode | Behaviour | Use it for |
+|---|---|---|
+| `NONE` *(default)* | Establishes no caller. Tools without access rules run; tools with them are denied. | upgrading an existing application without changing its behaviour |
+| `ASSERTED` | Trusts `_meta.callerId` and `_meta.authorities` verbatim. | a laptop demo, never anything reachable |
+| `DELEGATED` | Verifies an HS256 JWT, and its `sub` becomes the authenticated caller. | anything an auditor will look at |
+
+In `DELEGATED` mode a call runs like this:
+
+```java
+@PreAuthorize("hasAuthority('workorder:write')")   // unchanged, written for humans
+@AgentTool(name = "workorder.escalate", risk = RiskLevel.WRITE, scopes = "workorder:write")
+public WorkOrder escalate(String workOrderId, int priority, ToolInvocationContext context) {
+    // context.callerId() is the token's subject, not what the client claimed
+    // SecurityContextHolder also holds it, so @PreAuthorize above already ran
+}
+```
+
+Three properties worth stating explicitly, because each one is a place where a naive
+implementation goes wrong:
+
+- **The verified name wins.** If the request claims `callerId: ignored` and the token says
+  `zhang.cong`, the business method and the audit record both see `zhang.cong`. Keeping the
+  claimed name alongside a verified one is worse than having no identity at all, because it
+  looks correct.
+- **Identity travels with the call, not with the thread.** The context is established on
+  whichever thread runs the method, so a pooled or virtual thread works. Thread-local
+  inheritance is rejected on purpose: it hands the caller to threads that should never see it.
+- **`scopes` on the annotation is enforced, not decorative.** A token missing a declared
+  scope is refused before the method runs, even when there is no `@PreAuthorize` at all.
+
+### What this does not give you
+
+stdio has no HTTP headers, so a token can only arrive inside `_meta`. That means the token is
+visible to the MCP client and to whatever that client logs. For stdio, prefer
+`agent-bridge.security.static-token` bound to an environment variable — one process, one
+caller, nothing in the message stream. Genuine multi-caller isolation needs the HTTP
+transport and a real OAuth 2.1 flow, which is on the roadmap rather than in this version.
+
+Also note that the audit record still reports a single `callerId` field. `context.callerVerified()`
+tells a listener whether that name was checked; a record that names a caller without that
+flag is a rumour with a timestamp.
 
 ## Quick start
 
@@ -169,7 +222,19 @@ agent-bridge:
   max-auto-risk: WRITE      # READ | WRITE | DESTRUCTIVE
   include-packages:         # optional scan filter, empty = every bean
     - com.example.billing
+
+  security:
+    mode: DELEGATED                       # NONE (default) | ASSERTED | DELEGATED
+    shared-secret: ${AGENT_BRIDGE_SECRET:} # required when mode is DELEGATED
+    issuer: https://idp.example.com        # optional, pins the iss claim
+    static-token: ${AGENT_BRIDGE_TOKEN:}   # stdio: one process, one caller
+    require-token: true                    # DELEGATED only: refuse calls with no token
+    clock-skew-seconds: 60                 # tolerance on exp and nbf
 ```
+
+The security block only takes effect when Spring Security is already on your classpath.
+Adding this starter to an application that has never used it will not pull an authorisation
+framework in.
 
 ## Modules
 
@@ -194,14 +259,18 @@ agent-bridge:
 
 ## Status
 
-MVP. What works today: annotation-driven tools, schema derivation, risk gate, audit listener, stdio transport, MCP tool annotations.
+Early, but the headline claim is now true rather than planned.
+
+What works today: annotation-driven tools, schema derivation, risk gate, audit listener,
+stdio transport, MCP tool annotations, and **caller identity delegation** — a verified token
+becomes the `Authentication` your `@PreAuthorize` already evaluates.
 
 What does **not** work yet, and we will not pretend otherwise:
 
-- **No identity delegation.** `ToolInvocationContext` carries a caller id, but it is not yet derived from a token exchange. Until it is, treat the caller id as *asserted*, not *verified*.
 - **No idempotency.** A retried `tools/call` runs twice. Do not point this at a tool that charges money or creates records.
 - **No audit persistence.** You get one `ToolCallListener` callback per call; where it is written is your decision, not the library's.
-- **No HTTP transport.** stdio only, which means one process per client.
+- **No HTTP transport.** stdio only, which means one process per client — and that is why tokens have to travel in `_meta` for now.
+- **HS256 only.** No rotation, no JWKS, no asymmetric keys. Enough to be correct inside one trust domain, not enough to be a general identity provider client.
 - **The scan touches every bean at startup.** Use `include-packages` on a large application.
 - **No `oneOf` / `anyOf`.** Schema composition is not expressible from a method signature.
 
@@ -209,8 +278,8 @@ What does **not** work yet, and we will not pretend otherwise:
 
 Ordered by what blocks production adoption, not by what is interesting to build.
 
-- **v0.5.0** — on-behalf-of identity through Spring Security, so existing `@PreAuthorize` rules apply to agent calls; `requestId` deduplication; audit persistence and query; streamable HTTP.
-- **v0.9.0** — multi-tenancy, tool versioning and deprecation, per-tool rate limits, response redaction, OpenTelemetry metrics.
+- **v0.5.0** *(in progress)* — identity delegation ✅; still open: `requestId` deduplication, audit persistence and query, streamable HTTP.
+- **v0.9.0** — multi-tenancy, tool versioning and deprecation, per-tool rate limits, response redaction, OpenTelemetry metrics, JWKS and key rotation.
 - **v1.0.0** — API freeze, adapters for non-Spring stacks, a documentation site.
 
 Nothing here has a date attached. A feature lands when its tests are green, and the version number moves when the previous sentence is true.

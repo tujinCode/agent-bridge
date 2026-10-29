@@ -102,7 +102,57 @@ public class AgentBridgeAutoConfiguration {
                 log.info("agent-bridge risk ceiling is {}; higher-risk tools require confirmation.",
                         registry.maxAutoRisk());
             }
+            warnAboutGuardedToolsWithoutIdentity(discovered, properties.getSecurity().getMode());
         };
+    }
+
+    /**
+     * The failure this prevents: an application enables method security, this gateway is
+     * left in {@code NONE}, and every guarded tool call is denied with nothing in the logs
+     * connecting the denial to the gateway. That exact confusion already cost this project
+     * one debugging session, so it gets a warning naming the tools.
+     *
+     * <p>Annotations are matched by name rather than by class so this class needs no
+     * compile-time dependency on Spring Security or on Jakarta annotations.
+     */
+    private static void warnAboutGuardedToolsWithoutIdentity(List<ToolDescriptor> discovered,
+                                                             AgentBridgeProperties.Mode mode) {
+        if (mode != AgentBridgeProperties.Mode.NONE) {
+            return;
+        }
+        List<String> guarded = new ArrayList<>();
+        for (ToolDescriptor descriptor : discovered) {
+            String rule = accessRuleOn(descriptor.method());
+            if (rule != null) {
+                guarded.add(descriptor.name() + " (" + rule + ")");
+            }
+        }
+        if (!guarded.isEmpty()) {
+            log.warn("agent-bridge identity mode is NONE, but these tools carry access rules that "
+                    + "no caller will satisfy: {}. Every call to them will be denied. Set "
+                    + "agent-bridge.security.mode to DELEGATED (or ASSERTED for a local demo) to "
+                    + "have the gateway establish a caller first.", String.join(", ", guarded));
+        }
+    }
+
+    private static final List<String> ACCESS_RULE_ANNOTATIONS = List.of(
+            "org.springframework.security.access.prepost.PreAuthorize",
+            "org.springframework.security.access.prepost.PostAuthorize",
+            "org.springframework.security.access.annotation.Secured",
+            "jakarta.annotation.security.RolesAllowed",
+            "jakarta.annotation.security.DenyAll");
+
+    private static String accessRuleOn(java.lang.reflect.Method method) {
+        if (method == null) {
+            return null;
+        }
+        for (java.lang.annotation.Annotation annotation : method.getAnnotations()) {
+            String type = annotation.annotationType().getName();
+            if (ACCESS_RULE_ANNOTATIONS.contains(type)) {
+                return type.substring(type.lastIndexOf('.') + 1);
+            }
+        }
+        return null;
     }
 
     /**

@@ -37,6 +37,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -189,8 +190,16 @@ public final class McpServer {
         String callerId = meta.path("callerId").asText("");
         String requestId = meta.path("requestId").asText("");
 
+        // stdio has no headers, so _meta is the only channel available for credentials.
+        // Everything here is forwarded verbatim and interpreted by the identity layer;
+        // the transport does not decide what counts as proof.
+        Map<String, String> attributes = new LinkedHashMap<>();
+        putIfPresent(attributes, ToolInvocationContext.ATTR_AUTHORIZATION, meta.path("authorization").asText(""));
+        putIfPresent(attributes, ToolInvocationContext.ATTR_ASSERTED_AUTHORITIES, meta.path("authorities").asText(""));
+        putIfPresent(attributes, "tenant", meta.path("tenant").asText(""));
+
         ToolInvocationContext context = new ToolInvocationContext(
-                callerId, requestId.isBlank() ? null : requestId, null);
+                callerId, requestId.isBlank() ? null : requestId, attributes);
 
         ToolCallResult callResult = registry.call(name, arguments, context);
 
@@ -201,6 +210,12 @@ public final class McpServer {
         text.put("text", callResult.text());
         result.put("isError", callResult.error());
         return result;
+    }
+
+    private static void putIfPresent(Map<String, String> target, String key, String value) {
+        if (value != null && !value.isBlank()) {
+            target.put(key, value);
+        }
     }
 
     private String success(JsonNode id, JsonNode result) {

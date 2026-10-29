@@ -29,18 +29,21 @@
         </dependency>
 
         <!--
-            Test scope on purpose: the starter must not drag Spring Security into an
-            application that does not use it. The tests below need it because the whole
-            question they answer is "does method security actually see the agent call".
+            Optional, not test-only, and still not transitive: the identity interceptor is
+            compiled against Spring Security, but an application that does not use Spring
+            Security must not acquire it by adding this starter. The auto-configuration is
+            guarded by @ConditionalOnClass, so the classes are only loaded when the
+            application already has them on its own classpath.
         -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

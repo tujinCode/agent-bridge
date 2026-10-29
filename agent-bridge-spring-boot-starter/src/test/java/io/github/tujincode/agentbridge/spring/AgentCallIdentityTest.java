@@ -22,7 +22,6 @@ import io.github.tujincode.agentbridge.core.ToolRegistry;
 import io.github.tujincode.agentbridge.core.mcp.McpServer;
 import io.github.tujincode.agentbridge.spring.support.SecurityTestApplication;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +33,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,10 +51,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       The claim in the README is mechanically true once a caller exists.</li>
  *   <li>It did not fire before, because the scanner skipped every secured bean — see
  *       {@code ToolScanner.hasAgentTool} and the fix that followed.</li>
- *   <li>No code path turns an MCP request into an {@code Authentication}, so a
- *       {@code _meta.callerId} is a hint rather than a credential. The two disabled
- *       tests below are the specification for the missing piece.</li>
  * </ul>
+ *
+ * <p>This class now covers the {@code NONE} mode only: it answers "what happens if the
+ * gateway is left alone". {@link DelegatedIdentityTest} covers the case where a token is
+ * actually verified, which is what the README promises.
  */
 @SpringBootTest(
         classes = SecurityTestApplication.class,
@@ -127,13 +124,8 @@ class AgentCallIdentityTest {
     }
 
     @Test
-    @Disabled("v0.5.0 — nothing yet turns an MCP request into an Authentication. "
-            + "The caller id from _meta is passed to the business method as a hint and "
-            + "must not be trusted: any client can put any name there. Closing this gap "
-            + "means validating a token (or an asserted identity, in an explicitly "
-            + "insecure mode) and populating the SecurityContext before invocation.")
-    @DisplayName("an MCP request that names its caller is authorised as that caller")
-    void mcpCallerIdBecomesTheAuthenticatedCaller() throws Exception {
+    @DisplayName("in NONE mode a callerId in _meta is a hint, never a credential")
+    void callerIdInMetaIsNotACredential() throws Exception {
         String request = """
                 {"jsonrpc":"2.0","id":7,"method":"tools/call","params":{
                   "name":"demo.escalate",
@@ -144,37 +136,9 @@ class AgentCallIdentityTest {
         JsonNode response = JSON.readTree(server.handle(request));
 
         assertThat(response.path("result").path("isError").asBoolean())
-                .as("the README promises identity pass-through: a request carrying "
-                        + "callerId should be evaluated as that caller, not as nobody")
-                .isFalse();
-        assertThat(response.path("result").path("content").get(0).path("text").asText())
-                .contains("by zhang.cong");
-    }
-
-    @Test
-    @Disabled("v0.5.0 — SecurityContextHolder defaults to ThreadLocal, so a call handed "
-            + "to another thread arrives with no caller and is denied. This matters before "
-            + "the HTTP transport lands, not after: the fix is to carry the context "
-            + "explicitly through the invocation (a wrapper on the MCP loop, or a "
-            + "DelegatingSecurityContextExecutor) rather than to switch the holder to "
-            + "INHERITABLE_THREAD_LOCAL, which leaks the caller into threads that should "
-            + "not see it.")
-    @DisplayName("the security context survives a hand-off to another thread")
-    void securityContextSurvivesThreadHandoff() throws Exception {
-        authenticate("zhang.cong", "demo:write");
-
-        ExecutorService pool = Executors.newSingleThreadExecutor();
-        try {
-            Future<ToolCallResult> future = pool.submit(
-                    () -> registry.call("demo.escalate", Map.of("id", "X-1")));
-
-            assertThat(future.get().error())
-                    .as("any async or pooled transport inherits this problem: "
-                            + "ThreadLocal context does not follow the call")
-                    .isFalse();
-        } finally {
-            pool.shutdown();
-        }
+                .as("no identity mode is configured here, so a name typed into _meta creates no "
+                        + "Authentication and must not satisfy an access rule")
+                .isTrue();
     }
 
     private static void authenticate(String callerId, String... authorities) {

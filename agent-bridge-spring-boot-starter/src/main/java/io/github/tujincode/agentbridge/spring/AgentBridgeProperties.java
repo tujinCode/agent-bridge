@@ -50,6 +50,130 @@ public class AgentBridgeProperties {
     /** Optional package prefixes to scan. Empty means "every bean". */
     private List<String> includePackages = new ArrayList<>();
 
+    /** How a tool call acquires an authenticated caller. */
+    private Security security = new Security();
+
+    /**
+     * What the gateway does about the identity of whoever triggered a call.
+     *
+     * <p>The default is {@link Mode#NONE}: the library adds no security behaviour unless
+     * asked, and a tool call runs with whatever the current thread already carries. That
+     * is the safe default for an upgrade, not a safe default for production — hence the
+     * startup warning described on {@link Mode#NONE}.
+     */
+    public enum Mode {
+        /**
+         * No {@code Authentication} is created.
+         *
+         * <p>If the application enables method security while the gateway is in this mode,
+         * every tool that carries an access rule will be denied, and the denial will look
+         * like an authorisation bug in the business code. The starter logs a warning naming
+         * those tools at startup so the cause is obvious.
+         */
+        NONE,
+
+        /**
+         * The caller id and authorities sent by the client are trusted as-is.
+         *
+         * <p>This is not authentication, it is a placeholder with a nicer name. Any client
+         * can send any name. Use it for a laptop demo, never for anything reachable.
+         */
+        ASSERTED,
+
+        /**
+         * A signed JWT is verified, and its subject becomes the authenticated caller.
+         *
+         * <p>This is the only mode that can answer "who did this" to an auditor.
+         */
+        DELEGATED
+    }
+
+    /** Identity configuration. */
+    public static class Security {
+
+        private Mode mode = Mode.NONE;
+
+        /**
+         * HMAC secret used to verify delegated tokens. Required when mode is
+         * {@code DELEGATED}; startup fails without it rather than silently downgrading.
+         */
+        private String sharedSecret;
+
+        /** Expected {@code iss} claim. Optional, but recommended. */
+        private String issuer;
+
+        /**
+         * Token used for every call when the request does not carry one, typically bound
+         * to an environment variable: {@code ${AGENT_BRIDGE_TOKEN:}}.
+         *
+         * <p>Suited to stdio, where one process serves one client for its lifetime. It is
+         * the wrong mechanism the moment two callers share a process.
+         */
+        private String staticToken;
+
+        /** Whether {@code DELEGATED} refuses calls that present no token. Default true. */
+        private boolean requireToken = true;
+
+        /** Tolerance applied to {@code exp} and {@code nbf}, in seconds. */
+        private long clockSkewSeconds = 60;
+
+        public Mode getMode() {
+            return mode;
+        }
+
+        public void setMode(Mode mode) {
+            this.mode = mode == null ? Mode.NONE : mode;
+        }
+
+        public String getSharedSecret() {
+            return sharedSecret;
+        }
+
+        public void setSharedSecret(String sharedSecret) {
+            this.sharedSecret = sharedSecret;
+        }
+
+        public String getIssuer() {
+            return issuer;
+        }
+
+        public void setIssuer(String issuer) {
+            this.issuer = issuer;
+        }
+
+        public String getStaticToken() {
+            return staticToken;
+        }
+
+        public void setStaticToken(String staticToken) {
+            this.staticToken = staticToken;
+        }
+
+        public boolean isRequireToken() {
+            return requireToken;
+        }
+
+        public void setRequireToken(boolean requireToken) {
+            this.requireToken = requireToken;
+        }
+
+        public long getClockSkewSeconds() {
+            return clockSkewSeconds;
+        }
+
+        public void setClockSkewSeconds(long clockSkewSeconds) {
+            this.clockSkewSeconds = clockSkewSeconds;
+        }
+    }
+
+    public Security getSecurity() {
+        return security;
+    }
+
+    public void setSecurity(Security security) {
+        this.security = security == null ? new Security() : security;
+    }
+
     public enum Transport {
         /** Newline-delimited JSON-RPC over stdin/stdout. */
         STDIO,

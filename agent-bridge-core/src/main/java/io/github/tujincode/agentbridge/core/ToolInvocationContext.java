@@ -34,6 +34,32 @@ import java.util.Map;
  */
 public final class ToolInvocationContext {
 
+    /**
+     * Attribute holding a bearer token presented by the caller.
+     *
+     * <p>The transport puts it here; the identity layer reads it. It is deliberately an
+     * attribute rather than a field: whether a token is present at all depends on the
+     * transport, and the business method must never see it.
+     */
+    public static final String ATTR_AUTHORIZATION = "authorization";
+
+    /**
+     * Attribute holding authorities the caller merely <em>claims</em> to hold.
+     *
+     * <p>Only consulted in the explicitly insecure {@code ASSERTED} mode. If a
+     * deployment trusts this outside a lab, it has no access control at all.
+     */
+    public static final String ATTR_ASSERTED_AUTHORITIES = "assertedAuthorities";
+
+    /**
+     * Attribute recording how the caller's identity was established: {@code none},
+     * {@code asserted} or {@code verified}.
+     *
+     * <p>Audit consumers must read it. A record naming a caller without saying whether that
+     * name was verified is not an audit trail, it is a rumour with a timestamp.
+     */
+    public static final String ATTR_IDENTITY_VERIFICATION = "identityVerification";
+
     private final String callerId;
     private final String requestId;
     private final Map<String, String> attributes;
@@ -64,5 +90,33 @@ public final class ToolInvocationContext {
 
     public String attribute(String key) {
         return attributes.get(key);
+    }
+
+    /** Bearer token presented by the caller, or {@code null} when the transport carried none. */
+    public String authorization() {
+        return attributes.get(ATTR_AUTHORIZATION);
+    }
+
+    /**
+     * Returns a copy carrying an extra attribute. Used by the transport to attach what it
+     * knows about the request without widening this class for every transport.
+     */
+    public ToolInvocationContext withAttribute(String key, String value) {
+        if (key == null || value == null) {
+            return this;
+        }
+        Map<String, String> merged = new LinkedHashMap<>(attributes);
+        merged.put(key, value);
+        return new ToolInvocationContext(callerId, requestId, merged);
+    }
+
+    /** Returns a copy naming a different caller, used once an identity has been established. */
+    public ToolInvocationContext withCallerId(String newCallerId) {
+        return new ToolInvocationContext(newCallerId, requestId, attributes);
+    }
+
+    /** True when a credential was verified rather than merely claimed. */
+    public boolean callerVerified() {
+        return "verified".equals(attributes.get(ATTR_IDENTITY_VERIFICATION));
     }
 }
