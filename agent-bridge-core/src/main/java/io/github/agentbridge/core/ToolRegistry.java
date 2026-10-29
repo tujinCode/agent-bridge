@@ -2,6 +2,7 @@ package io.github.agentbridge.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.github.agentbridge.annotation.RiskLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,10 @@ public final class ToolRegistry {
     public ToolRegistry(RiskLevel maxAutoRisk, ToolCallListener listener) {
         this.maxAutoRisk = maxAutoRisk == null ? RiskLevel.READ : maxAutoRisk;
         this.listener = listener == null ? ToolCallListener.noop() : listener;
-        this.mapper = new ObjectMapper().findAndRegisterModules();
+        this.mapper = new ObjectMapper()
+                .findAndRegisterModules()
+                // Models read "2026-10-29T08:57:18Z" far better than "1793264394.7039056".
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         this.invoker = new ToolInvoker();
     }
 
