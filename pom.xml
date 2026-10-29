@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>io.github.agentbridge</groupId>
+    <artifactId>agent-bridge-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>agent-bridge</name>
+    <description>Expose existing Spring Boot services as governed AI Agent tools.</description>
+    <url>https://github.com/agentbridge/agent-bridge</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>agentbridge</id>
+            <name>AgentBridge contributors</name>
+            <url>https://github.com/agentbridge</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/agentbridge/agent-bridge.git</connection>
+        <developerConnection>scm:git:ssh://github.com/agentbridge/agent-bridge.git</developerConnection>
+        <url>https://github.com/agentbridge/agent-bridge</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <modules>
+        <module>agent-bridge-annotations</module>
+        <module>agent-bridge-core</module>
+        <module>agent-bridge-spring-boot-starter</module>
+        <module>agent-bridge-example-workorder</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.agentbridge</groupId>
+                <artifactId>agent-bridge-annotations</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.agentbridge</groupId>
+                <artifactId>agent-bridge-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.agentbridge</groupId>
+                <artifactId>agent-bridge-spring-boot-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <parameters>true</parameters>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

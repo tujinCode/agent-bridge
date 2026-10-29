@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  stdout belongs to the MCP protocol. Any log line printed there corrupts the
+  JSON-RPC stream and the client disconnects with a parse error, so every log
+  event is routed to stderr.
+-->
+<configuration>
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="WARN">
+        <appender-ref ref="STDERR"/>
+    </root>
+
+    <logger name="io.github.agentbridge" level="INFO"/>
+</configuration>

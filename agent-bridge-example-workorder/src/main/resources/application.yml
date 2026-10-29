@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: agent-bridge-example-workorder
+  main:
+    banner-mode: off
+    web-application-type: none
+
+agent-bridge:
+  enabled: true
+  transport: stdio
+  server-name: workorder-tools
+  server-version: 0.1.0
+  # READ runs automatically, WRITE needs confirmation, DESTRUCTIVE is blocked.
+  # Try changing this to DESTRUCTIVE and watch workorder.purge start working.
+  max-auto-risk: WRITE
+  include-packages:
+    - io.github.agentbridge.example
+
+logging:
+  level:
+    root: warn
+    io.github.agentbridge: info

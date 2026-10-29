@@ -1,0 +1,48 @@
+# Changelog
+
+All notable changes to this project are documented here.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Planned for v0.5.0 (V1)
+
+- Identity pass-through: on-behalf-of delegation built on Spring Security, so
+  existing `@PreAuthorize` rules apply to agent calls (FR-18, FR-19).
+- Idempotency: `requestId` deduplication window backed by Redis (FR-14).
+- Audit persistence and query by request id / caller / tool (FR-13).
+- Streamable HTTP transport sharing the same registry (FR-24).
+- Timeouts and three-level rate limiting (FR-15, FR-16).
+
+## [0.1.0] - 2026-10-29
+
+First cut: the vertical slice that proves "annotation is the contract".
+
+### Added
+
+- `@AgentTool` and `@AgentParam` annotations, plus the `RiskLevel` enum, in a
+  zero-dependency module.
+- JSON Schema derivation from method signatures: primitives, enums, collections,
+  maps, arrays, `Optional`, `UUID`, `LocalDate`/`Instant` and nested objects.
+- Bean Validation mapping into schema constraints (`@Size`, `@Min`, `@Max`,
+  `@Pattern`, `@Email`, `@NotBlank`, `@NotEmpty`, `@Positive`).
+- `ToolInvocationContext` injection: caller identity reaches the business method
+  without ever appearing in the schema.
+- Risk ceiling on the gateway (`max-auto-risk`), defaulting to `READ`.
+- Audit seam: one `ToolCallRecord` per call via `ToolCallListener`.
+- MCP stdio adapter implementing `initialize`, `ping`, `tools/list` and
+  `tools/call`, with `readOnlyHint` / `destructiveHint` / `idempotentHint`.
+- Spring Boot starter with auto-configuration and `agent-bridge.*` properties.
+- Runnable work-order example with `READ`, `WRITE` and `DESTRUCTIVE` tools.
+- `scripts/smoke.sh` end-to-end protocol check.
+
+### Known limitations
+
+- No identity delegation, idempotency, audit persistence or HTTP transport yet.
+- Startup scans every bean; use `include-packages` on large applications.
+- JSON Schema composition (`oneOf` / `anyOf`) is not expressible from a method
+  signature.
+
+[Unreleased]: https://github.com/agentbridge/agent-bridge/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/agentbridge/agent-bridge/releases/tag/v0.1.0

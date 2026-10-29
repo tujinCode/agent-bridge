@@ -1,0 +1,53 @@
+name: Feature request
+description: Propose a capability, ideally tied to a requirement id in the roadmap
+labels: [ "enhancement", "needs-triage" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This project only schedules work that maps to a requirement id in
+        [docs/02-需求清单.md](https://github.com/agentbridge/agent-bridge/blob/main/docs/02-%E9%9C%80%E6%B1%82%E6%B8%85%E5%8D%95.md).
+        If your idea is not covered there, that is fine — this issue is how it gets an id.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: Describe the situation, not the solution. What are you unable to do today?
+      placeholder: |
+        Our agents run inside a multi-tenant SaaS. Two tenants have a tool with the same
+        name but different permission sets, and the registry cannot tell them apart.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: If you have one. Sketch the API you wish existed.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Including "do nothing" — sometimes the right answer is a listener or a wrapper, not a core feature.
+
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Which stage does this belong to
+      options:
+        - v0.5.0 (V1 - production readiness)
+        - v0.9.0 (V1.5 - long-term maintenance)
+        - v1.0.0 (V2 - ecosystem)
+        - Not sure
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Confirm it is in scope
+      options:
+        - label: This is not agent orchestration, prompt management, RAG or a vector store (explicitly out of scope)
+          required: true

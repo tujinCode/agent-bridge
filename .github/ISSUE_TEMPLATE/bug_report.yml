@@ -1,0 +1,59 @@
+name: Bug report
+description: Schema generation, invocation or the MCP adapter behaves incorrectly
+labels: [ "bug", "needs-triage" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, please run `./scripts/smoke.sh` — it catches most protocol-level problems
+        in one command and its output is useful in the report.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Include the exact response you got, not a summary of it.
+      placeholder: |
+        tools/call for `order.find` returned isError:true with "argument 'id' is not a valid String"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: method
+    attributes:
+      label: The annotated method
+      description: Redact customer data, but keep annotations and signatures intact — they drive the schema.
+      render: java
+
+  - type: textarea
+    id: schema
+    attributes:
+      label: Generated inputSchema
+      description: Copy the tool entry from the `tools/list` response.
+      render: json
+
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: agent-bridge 0.1.0, JDK 21.0.5, Spring Boot 3.5.5, Claude Desktop 0.11
+    validations:
+      required: true
+
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Transport
+      options:
+        - stdio
+        - streamable-http
+        - none (calling ToolRegistry directly)
+    validations:
+      required: true
